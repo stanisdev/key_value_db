@@ -1,13 +1,8 @@
-mod db;
+mod system;
+use system::db::Db;
 
 fn main() {
-  let mut x: db::Db<String> = db::Db::new();
-  x.set("name", String::from("Stas"));
-
-  match x.get("name") {
-    Some(v) => println!("{}", v),
-    None => (),
-  }
-
-  x.delete("name");
+  let query = "FIND name".to_string(); // Simulate a query
+  let db = Db::new(query);
+  db.execute();
 }
