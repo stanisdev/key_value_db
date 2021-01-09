@@ -4,5 +4,7 @@ use system::db::Db;
 fn main() {
   let query = "FIND name".to_string(); // Simulate a query
   let db = Db::new(query);
-  db.execute();
+  let result = db.execute();
+
+  println!("{}", result);
 }
