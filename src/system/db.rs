@@ -1,30 +1,33 @@
 use super::file;
-use file::File;
+use file::{File, Compose};
 
-pub struct Db {
-  query: String,
+pub struct Db<'a> {
+  path: &'a str,
 }
 
-impl Db {
+impl<'a> Db<'a> {
   /**
    * Create a new instance of the struct
    */
-  pub fn new(query: String) -> Self {
-    Db { query }
+  pub fn new(path: &'a str) -> Self {
+    Db { path }
   }
 
   /**
    * Execute a query
    */
-  pub fn execute(&self) -> String {
-    match self.query.find(char::is_whitespace) {
+  pub fn execute(&self, query: String) -> String {
+    match query.find(char::is_whitespace) {
       Some(index) => {
-        let command = &self.query[..index];
-        let data = &self.query[index + 1..];
+        let command = &query[..index];
+        let data = &query[index + 1..];
 
         match command.to_lowercase().as_str() {
           "find" => self.find(data),
-          "save" => self.save(),
+          "save" => {
+            let params: Vec<&str> = data.split(" ").collect();
+            self.save(params[0], params[1])
+          },
           _ => "nothing found".to_string(),
         }
       },
@@ -33,29 +36,34 @@ impl Db {
   }
 }
 
-impl Db {
+impl<'a> Db<'a> {
   /**
    * Find value by a key
    */
-  fn find(&self, value: &str) -> String {
-    for line in File::new() {
-      if let Some(index) = line.find(':') {
-        let key = &line[..index];
-
-        if key == value {
-          let result = &line[index + 1..];
-          return result.to_string();
-        }
-      }
-    }
+  fn find(&self, value: &str) -> String { 
     "not found".to_string()
   }
 
-  fn save(&self) -> String {
+  /**
+   * Save or replace a value
+   */
+  fn save(&self, key: &str, value: &str) -> String {
+    let (mut file, fo) = Compose::new(self.path).get();
+    let buffer = &mut String::new();
+
+    file.read_to_string(buffer);
+    let mut lines = fo.get_as_collection(buffer);
+
+    lines[3] = "occupation:Dietitian";
+    fo.save_collection(lines);
+
     "ok".to_string()
   }
 
-  fn delete(&self) {
-
+  /**
+   * Delete line by a key
+   */
+  fn delete(&self, key: &str) -> String {
+    "ok".to_string()
   }
 }

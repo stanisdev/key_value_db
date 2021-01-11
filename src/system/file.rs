@@ -1,28 +1,64 @@
 use std::io::prelude::*;
-use std::fs::File as FileSystem;
-use std::io::{BufReader, Lines};
+use std::fs::{File as FileSystem, write};
+use std::io::{BufReader, Lines, Read};
 
 pub struct File {
-  pub lines: Lines<BufReader<FileSystem>>,
+  pub descriptor: FileSystem,
+  pub buffer: String,
 }
 
 impl File {
-  pub fn new() -> Self {
-    let path = "./src/storage/data.txt"; // @todo: move to config
-    let input = FileSystem::open(path).expect("file not found");
+  pub fn new(path: &str) -> Self {
     File {
-      lines: BufReader::new(input).lines(),
+      descriptor: FileSystem::open(path).expect("??"),
+      buffer: String::new(),
     }
+  }
+
+  pub fn read_to_string(&mut self, buffer: &mut String) {
+    self.descriptor.read_to_string(buffer).expect("?");
   }
 }
 
-impl Iterator for File {
-  type Item = String;
+/**
+ * Methods that are used to operate with the data
+ */
+pub struct FileOperations<'a> {
+  path: &'a str,
+}
 
-  fn next(&mut self) -> Option<Self::Item> {
-    match self.lines.next() {
-      Some(v) => Some(v.unwrap()),
-      None => None,
-    }
+impl<'a> FileOperations<'a> {
+  pub fn new(path: &'a str) -> Self {
+    FileOperations { path }
+  }
+
+  pub fn get_as_collection<'b>(&'a self, buffer: &'b String) -> Vec<&'b str> {
+    buffer.as_str().split("\n").collect()
+  }
+
+  pub fn save_collection(&self, lines: Vec<&str>) {
+    let result = lines.join("\n");
+    write(self.path, result.as_bytes()).expect("@@");
+  }
+}
+
+/**
+ * A struct to create instances of
+ * File and FileOperations structures
+ */
+pub struct Compose<'a> {
+  path: &'a str,
+}
+
+impl<'a> Compose<'a > {
+  pub fn new(path: &'a str) -> Self {
+    Compose { path }
+  }
+
+  pub fn get(self) -> (File, FileOperations<'a>) {
+    (
+      File::new(self.path),
+      FileOperations::new(self.path),
+    )
   }
 }

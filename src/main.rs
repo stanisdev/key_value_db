@@ -2,9 +2,10 @@ mod system;
 use system::db::Db;
 
 fn main() {
-  let query = "FIND name".to_string(); // Simulate a query
-  let db = Db::new(query);
-  let result = db.execute();
+  let query = "SAVE occupation Dietitian".to_string(); // Simulate a query
+  let path = "./src/storage/data.txt";
+  let db = Db::new(path);
+  let result = db.execute(query);
 
-  println!("{}", result);
+  // println!("{}", result);
 }
