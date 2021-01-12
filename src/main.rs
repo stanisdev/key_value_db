@@ -2,9 +2,12 @@ mod system;
 use system::db::Db;
 
 fn main() {
-  let query = "FIND occupation".to_string(); // Simulate a query
-  let mut db = Db::new();
-  let result = db.execute(query);
+  let input = "FIND occupation".to_string(); // Simulate a query
+  let db = Db {};
+  let result = db.execute(input);
 
-  // println!("{}", result);
+  match result {
+    Some(value) => println!("{}", value),
+    None => (),
+  }
 }
