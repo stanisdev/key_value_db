@@ -43,7 +43,7 @@ impl<'a> FileOperations<'a> {
     buffer.as_str().split("\n").collect()
   }
 
-  pub fn save_collection(&self, lines: Vec<&str>) {
+  pub fn save_collection(&self, lines: &Vec<&str>) {
     let result = lines.join("\n");
     write(self.config.path, result.as_bytes()).expect("@");
   }

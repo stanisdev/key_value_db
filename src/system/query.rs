@@ -44,17 +44,30 @@ impl Query {
     file.read_to_string(buffer);
     let mut lines = fo.get_as_collection(buffer);
 
-    lines[3] = "occupation:Dietitian";
-    fo.save_collection(lines);
+    let mut counter = 0;
+    while counter < lines.len() {
+      let line = lines[counter];
+      if let Some(index) = line.find(':') {
+        if key == &line[..index] {
+          let result = key.to_owned() + ":" + value;
+          lines[counter] = result.as_str();
+          fo.save_collection(&lines);
+          return;
+        }
+      }
+      counter += 1;
+    }
+    let new_line = key.to_owned() + ":" + value;
+    lines.push(new_line.as_str());
+
+    fo.save_collection(&lines);
     self.set_result("ok");
   }
 
   /**
    * Delete line by a key
    */
-  pub fn delete(&self, key: &str) -> String {
-    "ok".to_string()
-  }
+  pub fn delete(&mut self, key: &str) {}
 }
 
 impl Query {
