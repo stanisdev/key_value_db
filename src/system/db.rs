@@ -1,8 +1,6 @@
-use super::file;
-use file::{File, Compose};
+use super::file::{File, Compose};
 
 pub struct Db<'a> {
-  path: &'a str,
   result: Option<&'a str>,
 }
 
@@ -10,9 +8,8 @@ impl<'a> Db<'a> {
   /**
    * Create a new instance of the struct
    */
-  pub fn new(path: &'a str) -> Self {
+  pub fn new() -> Self {
     Db {
-      path,
       result: None,
     }
   }
@@ -45,7 +42,7 @@ impl<'a> Db<'a> {
    * Find value by a key
    */
   fn find(&mut self, value: &str) {
-    let reader = File::new(self.path).get_reader();
+    let reader = File::new().get_reader();
 
     for line in reader {
       let data = line.unwrap();
@@ -55,7 +52,8 @@ impl<'a> Db<'a> {
 
         if key == value {
           let result = &data[index + 1..];
-          self.result = Some(result);
+          println!("{}", result);
+          // self.result = Some(result);
         }
       }
     }
@@ -65,7 +63,7 @@ impl<'a> Db<'a> {
    * Save or replace a value
    */
   fn save(&mut self, key: &str, value: &str) {
-    let (mut file, fo) = Compose::new(self.path).get();
+    let (mut file, fo) = Compose::new().get();
     let buffer = &mut String::new();
 
     file.read_to_string(buffer);

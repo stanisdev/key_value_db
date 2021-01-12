@@ -1,6 +1,7 @@
 use std::io::prelude::*;
 use std::fs::{File as FileSystem, write};
 use std::io::{BufReader, Lines, Read};
+use super::config::{Config};
 
 pub struct File {
   pub descriptor: FileSystem,
@@ -8,9 +9,9 @@ pub struct File {
 }
 
 impl File {
-  pub fn new(path: &str) -> Self {
+  pub fn new() -> Self {
     File {
-      descriptor: FileSystem::open(path).expect("??"),
+      descriptor: FileSystem::open(Config::new().path).expect("??"),
       buffer: String::new(),
     }
   }
@@ -28,12 +29,14 @@ impl File {
  * Methods that are used to operate with the data
  */
 pub struct FileOperations<'a> {
-  path: &'a str,
+  config: Config<'a>,
 }
 
 impl<'a> FileOperations<'a> {
-  pub fn new(path: &'a str) -> Self {
-    FileOperations { path }
+  pub fn new() -> Self {
+    FileOperations {
+      config: Config::new(),
+    }
   }
 
   pub fn get_as_collection<'b>(&'a self, buffer: &'b String) -> Vec<&'b str> {
@@ -42,7 +45,7 @@ impl<'a> FileOperations<'a> {
 
   pub fn save_collection(&self, lines: Vec<&str>) {
     let result = lines.join("\n");
-    write(self.path, result.as_bytes()).expect("@@");
+    write(self.config.path, result.as_bytes()).expect("@");
   }
 }
 
@@ -50,19 +53,17 @@ impl<'a> FileOperations<'a> {
  * A struct to create instances of
  * File and FileOperations structures
  */
-pub struct Compose<'a> {
-  path: &'a str,
-}
+pub struct Compose {}
 
-impl<'a> Compose<'a > {
-  pub fn new(path: &'a str) -> Self {
-    Compose { path }
+impl Compose {
+  pub fn new() -> Self {
+    Compose {}
   }
 
-  pub fn get(self) -> (File, FileOperations<'a>) {
+  pub fn get(self) -> (File, FileOperations<'static>) {
     (
-      File::new(self.path),
-      FileOperations::new(self.path),
+      File::new(),
+      FileOperations::new(),
     )
   }
 }
