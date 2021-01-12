@@ -18,6 +18,10 @@ impl File {
   pub fn read_to_string(&mut self, buffer: &mut String) {
     self.descriptor.read_to_string(buffer).expect("?");
   }
+
+  pub fn get_reader(self) -> Lines<BufReader<FileSystem>> {
+    BufReader::new(self.descriptor).lines()
+  }
 }
 
 /**

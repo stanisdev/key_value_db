@@ -3,6 +3,7 @@ use file::{File, Compose};
 
 pub struct Db<'a> {
   path: &'a str,
+  result: Option<&'a str>,
 }
 
 impl<'a> Db<'a> {
@@ -10,13 +11,16 @@ impl<'a> Db<'a> {
    * Create a new instance of the struct
    */
   pub fn new(path: &'a str) -> Self {
-    Db { path }
+    Db {
+      path,
+      result: None,
+    }
   }
 
   /**
    * Execute a query
    */
-  pub fn execute(&self, query: String) -> String {
+  pub fn execute(&mut self, query: String) {
     match query.find(char::is_whitespace) {
       Some(index) => {
         let command = &query[..index];
@@ -28,11 +32,11 @@ impl<'a> Db<'a> {
             let params: Vec<&str> = data.split(" ").collect();
             self.save(params[0], params[1])
           },
-          _ => "nothing found".to_string(),
-        }
+          _ => (),
+        };
       },
       None => panic!("unrecognizable query"),
-    }
+    };
   }
 }
 
@@ -40,14 +44,27 @@ impl<'a> Db<'a> {
   /**
    * Find value by a key
    */
-  fn find(&self, value: &str) -> String { 
-    "not found".to_string()
+  fn find(&mut self, value: &str) {
+    let reader = File::new(self.path).get_reader();
+
+    for line in reader {
+      let data = line.unwrap();
+
+      if let Some(index) = data.find(':') {
+        let key = &data[..index];
+
+        if key == value {
+          let result = &data[index + 1..];
+          self.result = Some(result);
+        }
+      }
+    }
   }
 
   /**
    * Save or replace a value
    */
-  fn save(&self, key: &str, value: &str) -> String {
+  fn save(&mut self, key: &str, value: &str) {
     let (mut file, fo) = Compose::new(self.path).get();
     let buffer = &mut String::new();
 
@@ -56,8 +73,7 @@ impl<'a> Db<'a> {
 
     lines[3] = "occupation:Dietitian";
     fo.save_collection(lines);
-
-    "ok".to_string()
+    self.result = Some("ok");
   }
 
   /**
